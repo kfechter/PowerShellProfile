@@ -21,6 +21,31 @@ function Test-PendingReboot {
 	}
 }
 
+function New-Repo
+{
+    Param(
+        [Parameter(Mandatory=$false)][string]$RepoName,
+        [Parameter(Mandatory=$false)][string]$Path,
+        [switch]$Force
+    )
+
+    # Both specified Path + RepoName
+    # No Path Specified, assume current directory + RepoName
+    # No Repo Name Specified, Init Path as repo after checks
+    # Assume current directory if nothing specified
+
+    if($RepoName -and $Path) {
+        $RepositoryPath = "$Path\$RepoName"
+        if(-Not (Test-Path -Path $RepositoryPath)){
+            New-item -ItemType Directory -Path $RepositoryPath
+            Push-Location $RepositoryPath
+            git init
+            git checkout -b main
+            git branch -d master
+        }
+    }
+}
+
 function Test-Transcription {
     <#
     
