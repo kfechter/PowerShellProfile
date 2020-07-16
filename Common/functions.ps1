@@ -21,27 +21,122 @@ function Test-PendingReboot {
 	}
 }
 
+function Rename-Branches {
+    $CurrentPath = Get-Location
+    if(-Not (Test-Path -Path "$CurrentPath\.git")) {
+        Write-Warning 'This function must be run in a git repository'
+        return
+    }
+
+    # check for uncommitted changes, Check for a master branch, branch "main" from master and delete master
+}
+
+function Clear-DeletedBranches {
+    $CurrentPath = Get-Location
+    if(-Not (Test-Path -Path "$CurrentPath\.git")) {
+        Write-Warning 'This function must be run in a git repository'
+        return
+    }
+
+    git remote prune origin
+    $Branches = git branch -vv
+
+    $PrunedBranches = $Branches | Where-Object { $_ -ilike '*: gone]*'}
+
+    $PrunedBranches | ForEach-Object {
+        # git branch -d $Branch
+    }
+}
+
 function New-Repo
 {
     Param(
-        [Parameter(Mandatory=$false)][string]$RepoName,
         [Parameter(Mandatory=$false)][string]$Path,
+        [Parameter(Mandatory=$false)][string]$RemoteOrigin,
         [switch]$Force
     )
 
-    # Both specified Path + RepoName
-    # No Path Specified, assume current directory + RepoName
-    # No Repo Name Specified, Init Path as repo after checks
-    # Assume current directory if nothing specified
+    if($Path) {
+        $DirectoryPath = $Path
+    }
+    else {
+        $DirectoryPath = Get-Location
+    }
 
-    if($RepoName -and $Path) {
-        $RepositoryPath = "$Path\$RepoName"
-        if(-Not (Test-Path -Path $RepositoryPath)){
-            New-item -ItemType Directory -Path $RepositoryPath
-            Push-Location $RepositoryPath
-            git init
-            git checkout -b main
-            git branch -d master
+    if(-Not (Test-Path -Path $DirectoryPath)) {
+        New-Item -ItemType Directory -Path $DirectoryPath
+    }
+
+    $IsGitRepo = (Test-Path -Path "$DirectoryPath\.git")
+
+    if($IsGitRepo) {
+        Write-Warning 'Path is already a git repository.'
+        return
+    }
+
+    $DirectoryContents = Get-ChildItem -Path $DirectoryPath -Force
+    if(($DirectoryContents.Count -gt 0) -and -Not $Force) {
+        Write-Warning 'Path is not empty, specify -Force to ignore empty directories'
+        return
+    }
+
+    Push-Location $DirectoryPath
+    git init
+    git checkout -b main
+    git branch -d master
+
+    if($RemoteOrigin) {
+        git remote add origin $RemoteOrigin
+    }
+
+    Pop-Location
+}
+
+function Push-Repo {
+    Param(
+        [Parameter(Mandatory=$true)][string]$CommitMessage,
+        [Parameter(Mandatory=$false)][string]$GitRemoteURL
+    )
+
+    # Check to make sure we are in a git controlled folder
+    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+    if($GitFolder.Count -eq 0) {
+        Write-Warning "Not a git Repository"
+        return
+    }
+
+
+    # Check if Repo has remote
+    $Remotes = (git remote)
+    $MissingRemotes = $Remotes.Count -eq 0
+    if ($MissingRemotes -and -Not $GitRemoteURL) {
+        Write-Warning "Remote URL Required as repo does not have any origin"
+        return
+    }
+    elseif($MissingRemotes)
+    {
+        git remote add origin $GitRemoteURL
+    }
+
+    # Check if the current Branch has an upstream
+    $CurrentBranch = ((git branch) | Where-Object { $_ -like '*`**' }).Replace('*', '').Trim()
+    $BranchStatus = (git status -sb)
+
+    if($BranchStatus -like "*origin/$CurrentBranch") {
+        Write-Host "Branch Has Remote"
+        git add -A
+        git commit -m $CommitMessage
+        git push
+    }
+    else {
+        Write-Host "Branch Does Not Have Remote Tracking"
+        git add -A
+        git commit -m $CommitMessage
+        if($MissingRemotes) {
+            git push --set-upstream origin $CurrentBranch --allow-unrelated-histories
+        }
+        else {
+            git push --set-upstream origin $CurrentBranch
         }
     }
 }
