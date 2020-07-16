@@ -47,6 +47,36 @@ function Clear-DeletedBranches {
 
 function New-Repo
 {
+    <#
+.SYNOPSIS
+Creates a new git repository with default branch main
+
+.DESCRIPTION
+
+Creates a new git repository and changes default branch to main. If no 
+path specified, assumes current directory
+
+.PARAMETER Path
+[Optional] Specifies the path to the repository.
+
+.PARAMETER RemoteOrigin
+[Optional] Specifies the remote repository to set as 'origin'
+
+
+.EXAMPLE
+
+PS> New-Repository
+
+.EXAMPLE
+
+PS> New-Repository -Path C:\Projects\Repository
+
+.EXAMPLE
+
+PS> extension "File" "doc"
+File.doc
+
+#>
     Param(
         [Parameter(Mandatory=$false)][string]$Path,
         [Parameter(Mandatory=$false)][string]$RemoteOrigin,
