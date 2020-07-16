@@ -62,7 +62,6 @@ path specified, assumes current directory
 .PARAMETER RemoteOrigin
 [Optional] Specifies the remote repository to set as 'origin'
 
-
 .EXAMPLE
 
 PS> New-Repository
@@ -73,8 +72,11 @@ PS> New-Repository -Path C:\Projects\Repository
 
 .EXAMPLE
 
-PS> extension "File" "doc"
-File.doc
+PS> New-Repository -Path C:\Projects\Repository -RemoteOrigin git@github.com:kfechter/PowerShellProfile.git
+
+.EXAMPLE
+
+PS> New-Repository -Path C:\Projects\ExistingNonEmptyFolder -Force
 
 #>
     Param(
