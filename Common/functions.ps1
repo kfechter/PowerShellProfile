@@ -39,10 +39,7 @@ function Clear-DeletedBranches {
     }
 
     git remote prune origin
-    $Branches = git branch -vv
-
-    $PrunedBranches = $Branches | Where-Object { $_ -ilike '*: gone]*'}
-
+    $PrunedBranches = (git branch -vv) | Where-Object { $_ -ilike '*: gone]*'}
     $PrunedBranches | ForEach-Object {
         # git branch -d $Branch
     }
