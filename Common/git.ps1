@@ -194,3 +194,28 @@ General notes
 
     # check for uncommitted changes, Check for a master branch, branch "main" from master and delete master
 }
+
+$GitHubCLIExists = Get-Command 'gh.exe' -ErrorAction SilentlyContinue
+if ($GitHubCLIExists) {
+    function New-PullRequest {
+        <#
+    .SYNOPSIS
+    Short description
+
+    .DESCRIPTION
+    Long description
+
+    .EXAMPLE
+    An example
+
+    .NOTES
+    General notes
+    #>
+
+        # Check if in repo directory
+        # get repo remote
+        # ensure not on main
+        # gh pr create
+        # optionally create for different branches
+    }
+}
