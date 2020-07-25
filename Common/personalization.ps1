@@ -1,9 +1,11 @@
 # Pretty prompt does not work except in Windows Terminal
-if ($global:IsWindowsTerminal) {
-        Set-Theme Paradox
+if ([bool]($env:WT_Session)) {
+    Set-Theme Paradox
 }
 else {
     function prompt {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
+        param()
         Write-Warning 'Test For Non WT shells'
     }
 }

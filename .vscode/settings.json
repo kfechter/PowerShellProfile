@@ -1,0 +1,10 @@
+{
+    "powershell.codeFormatting.alignPropertyValuePairs": false,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "editor.detectIndentation": false,
+    "powershell.codeFormatting.autoCorrectAliases": true,
+    "powershell.codeFormatting.preset": "Stroustrup",
+    "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+    "powershell.codeFormatting.whitespaceBetweenParameters": true,
+    "powershell.scriptAnalysis.settingsPath": "C:\\Users\\kenne\\OneDrive\\Documents\\PowerShell\\PSScriptAnalyzer\\PSScriptAnalyzerSettings.psd1"
+}
