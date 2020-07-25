@@ -17,13 +17,16 @@ if (-not (Test-Path -Path $TranscriptDirectory)) {
 
 if (-Not (Test-Path -Path "$ProfileDirectory\Settings")) {
     New-Item -ItemType Directory -Path "$ProfileDirectory\Settings" -Force
-
-    # Set any default settings.clixml here
-    $False | Export-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled" -Force
 }
 
+# Set any default settings.clixml here
+$DefaultValues = @{
+    'TranscriptEnabled' = $false
+}
 
-
+foreach ($Setting in $DefaultValues.GetEnumerator()) {
+    $Setting.Value | Export-Clixml -Path "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+}
 
 Set-Location $HOME
 
