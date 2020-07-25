@@ -18,7 +18,8 @@ if (-not (Test-Path -Path $TranscriptDirectory)) {
 if (-Not (Test-Path -Path "$ProfileDirectory\Settings")) {
     New-Item -ItemType Directory -Path "$ProfileDirectory\Settings" -Force
 
-    # Initialize any settings with default values here.
+    # Set any default settings.clixml here
+    $False | Export-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled" -Force
 }
 
 
@@ -27,3 +28,9 @@ if (-Not (Test-Path -Path "$ProfileDirectory\Settings")) {
 Set-Location $HOME
 
 Clear-Transcripts
+
+if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled.clixml")) {
+    $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
+    $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"
+    Start-Transcript -Path $TranscriptPath
+}
