@@ -212,10 +212,30 @@ if ($GitHubCLIExists) {
     General notes
     #>
 
-        # Check if in repo directory
-        # get repo remote
-        # ensure not on main
-        # gh pr create
-        # optionally create for different branches
+        param(
+            [Parameter(Mandatory = $false)][string]$BaseBranch
+        )
+
+        # Check to make sure we are in a git controlled folder
+        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+        if ($GitFolder.Count -eq 0) {
+            Write-Warning "Not a git Repository"
+            return
+        }
+
+        # Check to make sure we are not on the 'main' branch.
+        $CurrentBranch = ((git branch) | Where-Object { $_ -like '*`**' }).Replace('*', '').Trim()
+        if ((($CurrentBranch -eq 'main') -or ($CurrentBranch -eq 'master')) -and -Not $BaseBranch) {
+            Write-Warning "Branch is currently on $CurrentBranch. This is the default branch."
+            Write-Warning "Run this command to create a pull request from a non default branch or specify a base branch"
+            return
+        }
+
+        if ($BaseBranch) {
+            gh pr create --base $BaseBranch
+        }
+        else {
+            gh pr create
+        }
     }
 }
