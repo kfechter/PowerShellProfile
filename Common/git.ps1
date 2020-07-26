@@ -109,18 +109,37 @@ General notes
         $runtimeParams = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
         # Add optional attributes to parameter
-        $parameterAttributes = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $generatePullRequestAttributes = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $requiredParametersAttributes = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $optionalParametersAttributes = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 
-        $parameterMandatoryAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $parameterMandatoryAttribute.Mandatory = $false
-        $parameterAttributes.Add($parameterMandatoryAttribute)
+        $generatePullRequestAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $generatePullRequestAttribute.Mandatory = $false
+        $generatePullRequestAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $generatePullRequestAttributes.Add($generatePullRequestAttribute)
+
+        $requiredParametersAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $requiredParametersAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $requiredParametersAttribute.Mandatory = $true
+        $requiredParametersAttributes.Add($requiredParametersAttribute)
+
+        $optionalParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $requiredParametersAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $requiredParametersAttribute.Mandatory = $false
+        $optionalParametersAttributes.Add($optionalParameterAttribute)
 
         if ($GitHubCLIExists) {
-            # Create "GeneratePullRequest" and "BaseBranch" Parameters
-            $parameterGeneratePullRequest = New-Object System.Management.Automation.RuntimeDefinedParameter('GeneratePullRequest', [switch], $parameterAttributes)
-            $parameterBaseBranchName = New-Object System.Management.Automation.RuntimeDefinedParameter('BaseBranchName', [string], $parameterAttributes)
+            # Create "GeneratePullRequest" Parameters
+            $parameterGeneratePullRequest = New-Object System.Management.Automation.RuntimeDefinedParameter('GeneratePullRequest', [switch], $generatePullRequestAttributes)
+            $parameterPullRequestTitle = New-Object System.Management.Automation.RuntimeDefinedParameter('RequestTitle', [string], $requiredParametersAttributes)
+            $parameterPullRequestBody = New-Object System.Management.Automation.RuntimeDefinedParameter('RequestBody', [string], $requiredParametersAttributes)
+            $parameterLabels = New-Object System.Management.Automation.RuntimeDefinedParameter('Labels', [string[]], $optionalParametersAttributes)
+            $parameterBaseBranch = New-Object System.Management.Automation.RuntimeDefinedParameter('BaseBranch', [string], $optionalParametersAttributes)
             $runtimeParams.Add('GeneratePullRequest', $parameterGeneratePullRequest)
-            $runtimeParams.Add('BaseBranchName', $parameterBaseBranchName)
+            $runtimeParams.Add('RequestTitle', $parameterPullRequestTitle)
+            $runtimeParams.Add('RequestBody', $parameterPullRequestBody)
+            $runtimeParams.Add('Labels', $parameterLabels)
+            $runtimeParams.Add('BaseBranch', $parameterBaseBranch)
         }
 
         return $runtimeParams
@@ -130,7 +149,10 @@ General notes
         # Create variables from dynamic parameters
         if ($GitHubCLIExists) {
             $GeneratePullRequest = $PSBoundParameters['GeneratePullRequest']
-            $BaseBranchName = $PSBoundParameters['BaseBranchName']
+            $BaseBranch = $PSBoundParameters['BaseBranch']
+            $RequestTitle = $PSBoundParameters['RequestTitle']
+            $RequestBody = $PSBoundParameters['RequestBody']
+            $Labels = $PSBoundParameters['Labels']
         }
     }
 
@@ -160,6 +182,7 @@ General notes
 
         if ($BranchStatus -like "*origin/$CurrentBranch") {
             Write-Warning "Branch Has Remote Tracking" -InformationAction Continue
+            git pull
             git add -A
             git commit -m $CommitMessage
             git push
@@ -177,12 +200,24 @@ General notes
         }
 
         if ($GeneratePullRequest) {
-            if ($BaseBranchName) {
-                gh pr create --base $BaseBranchName
+            $PullRequestParameters = @{
+                'RequestTitle' = $RequestTitle
+                'RequestBody' = $RequestBody
             }
-            else {
-                gh pr create
+
+            if ($Labels) {
+                $PullRequestParameters += @{
+                    'Labels' = $Labels
+                }
             }
+
+            if ($BaseBranch) {
+                $PullRequestParameters += @{
+                    'BaseBranch' = $BaseBranch
+                }
+            }
+
+            New-PullRequest @PullRequestParameters
         }
     }
 }
@@ -256,6 +291,9 @@ if ($GitHubCLIExists) {
     #>
 
         param(
+            [Parameter(Mandatory = $true)][string]$RequestTitle,
+            [Parameter(Mandatory = $true)][string]$RequestBody,
+            [Parameter(Mandatory = $false)][string[]]$Labels,
             [Parameter(Mandatory = $false)][string]$BaseBranch
         )
 
@@ -274,11 +312,55 @@ if ($GitHubCLIExists) {
             return
         }
 
-        if ($BaseBranch) {
-            gh pr create --base $BaseBranch
+        $LabelParameter = ''
+
+        if ($Labels) {
+            $LabelParameter = $Labels -join ','
+        }
+
+        if ($Labels -and $BaseBranch) {
+            & gh pr create --title "$RequestTitle" --body "$RequestBody" --label "$LabelParameter" --base "$BaseBranch"
+        }
+        elseif ($Labels) {
+            & gh pr create --title "$RequestTitle" --body "$RequestBody" --label "$LabelParameter"
+        }
+        elseif ($BaseBranch) {
+            & gh pr create --title "$RequestTitle" --body "$RequestBody" --base "$BaseBranch"
         }
         else {
-            gh pr create
+            & gh pr create --title "$RequestTitle" --body "$RequestBody"
         }
     }
+}
+
+function Merge-PullRequest {
+    <#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER PullRequestNumber
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+    param(
+        [Parameter(Mandatory = $false)][int]$PullRequestNumber
+    )
+
+    if (-Not $PullRequestNumber) {
+        Write-Warning "No Pull Request Number Selected, Please Specify one from the following list"
+        gh pr list
+        $PullRequestNumber = Read-Host -Prompt "Enter the number of the Pull request you want: "
+    }
+
+    gh pr merge $PullRequestNumber --merge --delete-branch
+    git pull
 }
