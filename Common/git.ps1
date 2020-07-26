@@ -355,6 +355,13 @@ General notes
         [Parameter(Mandatory = $false)][int]$PullRequestNumber
     )
 
+    # Check to make sure we are in a git controlled folder
+    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+    if ($GitFolder.Count -eq 0) {
+        Write-Warning "Not a git Repository"
+        return
+    }
+
     if (-Not $PullRequestNumber) {
         Write-Warning "No Pull Request Number Selected, Please Specify one from the following list"
         gh pr list
