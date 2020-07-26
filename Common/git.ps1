@@ -345,6 +345,12 @@ see here for reasoning about branch rename https://www.hanselman.com/blog/Easily
         return
     }
 
+    $GitCommits = git cherry -v
+    if ($GitCommits.Count -gt 0) {
+        Write-Warning "Please push all commits to remote before running or they will be lost."
+        return
+    }
+
     git checkout -b main
     git branch -d master
     Push-Repo -CommitMessage "Renaming 'Master' branch to 'main'"
