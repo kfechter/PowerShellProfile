@@ -317,6 +317,7 @@ Renames the "master" branch of a repository to "main"
 
 .DESCRIPTION
 This function branches "master" to "main", and then deletes the branch named "master"
+Requires repo to exist on a remote currently
 
 .EXAMPLE
 PS> Rename-Branches
@@ -347,8 +348,6 @@ see here for reasoning about branch rename https://www.hanselman.com/blog/Easily
     git checkout -b main
     git branch -d master
     Push-Repo -CommitMessage "Renaming 'Master' branch to 'main'"
-
-    # check for uncommitted changes, Check for a master branch, branch "main" from master and delete master
 }
 
 if ($GitHubCLIExists) {
