@@ -160,6 +160,7 @@ General notes
 
         if ($BranchStatus -like "*origin/$CurrentBranch") {
             Write-Warning "Branch Has Remote Tracking" -InformationAction Continue
+            git pull
             git add -A
             git commit -m $CommitMessage
             git push
