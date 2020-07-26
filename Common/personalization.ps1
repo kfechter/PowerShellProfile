@@ -6,7 +6,14 @@ else {
     function prompt {
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
         param()
-        Write-Warning 'Test For Non WT shells'
+        $History = Get-History
+        if ($History.Count -gt 0) {
+            $PreviousCommand = $History[$History.Count - 1]
+        }
+
+        $CommandPrompt = if ($PreviousCommand) { "Previous Command: $PreviousCommand" } else { "Previous Command: None" }
+
+        "$CommandPrompt [$(Get-Date)] `n PS $($executionContext.SessionState.Path.CurrentLocation)$('> ' * ($nestedPromptLevel + 1))";
     }
 }
 
