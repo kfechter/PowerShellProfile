@@ -1,16 +1,15 @@
 function Test-PendingReboot {
     <#
 .SYNOPSIS
-Short description
+Checks if a machine (Windows or Linux) needs a reboot
 
 .DESCRIPTION
-Long description
+Checks if the local computer needs a reboot. On Linux, checks for the presence of /var/run/reboot-required. On Windows,
+checks several registry entries and wmi for reboot flags.
 
 .EXAMPLE
-An example
-
-.NOTES
-General notes
+PS> Test-PendingReboot
+True
 #>
 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingEmptyCatchBlock', '', Justification = 'Catch here does not need to throw, as it is handled accordingly')]
@@ -98,16 +97,15 @@ function Test-Transcription {
 function Switch-Transcript {
     <#
 .SYNOPSIS
-Short description
+Turns powershell transcripting on or off.
 
 .DESCRIPTION
-Long description
+Gets the current state of transcription, and then either enables it or disables it. Stores the current setting
+in the Profile ./Settings/ Directory as a clixml.
 
 .EXAMPLE
-An example
-
-.NOTES
-General notes
+PS> Switch-Transcript
+Transcription is now Enabled
 #>
 
     $Transcript = Test-Transcription
@@ -116,31 +114,35 @@ General notes
     $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"
 
     if ($Transcript) {
+        Write-Output "Transcription is now Disabled"
         Stop-Transcript
     }
     else {
+        Write-Output "Transcription is now Enabled"
         Start-Transcript -Path $TranscriptPath
     }
+
+    $TranscriptSettingsRootPath = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
+    $Transcript | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
 }
 
 function Clear-Transcripts {
     <#
 .SYNOPSIS
-Short description
+Clears transcripts older than 30 days.
 
 .DESCRIPTION
-Long description
+Removes all transcript text files older than 30 days from the profile transcript directory.
 
 .EXAMPLE
-An example
-
-.NOTES
-General notes
+PS> Clear-Transcripts
+WARNING: Removing Transcripts older than 30 days
+VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Transcript-20200726_003403.txt".
 #>
 
     $OldTranscripts = (Get-ChildItem -Path "C:\Temp\Transcript" -Filter '*.txt' | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) })
     if ($OldTranscripts.Count -gt 0) {
         Write-Warning 'Removing Transcripts older than 30 days'
-        $OldTranscripts | Remove-Item -Force
+        $OldTranscripts | Remove-Item -Force -Verbose
     }
 }
