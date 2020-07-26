@@ -1,5 +1,26 @@
 # Important Parameters up here
 $GitHubCLIExists = Get-Command 'gh.exe' -ErrorAction SilentlyContinue
+$NonRepoWarning = "Current Directory is not a Git repository."
+$BranchNameFilter = @('master', 'slave')
+
+function Test-IsGitRepo {
+    <#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+    return ($GitFolder.Count -ne 0)
+}
 
 function New-Repo {
     <#
@@ -370,4 +391,40 @@ General notes
 
     gh pr merge $PullRequestNumber --merge --delete-branch
     git pull
+}
+
+function New-Branch {
+    <#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+    param(
+        [Parameter(Mandatory = $true)][string]$BranchName,
+        [Parameter(Mandatory = $false)][switch]$PushRepo
+    )
+
+    if (-Not (Test-IsGitRepo)) {
+        Write-Warning $NonRepoWarning
+    }
+
+    if ($BranchName -in $BranchNameFilter) {
+        Write-Warning "Consider using branch names that are more inclusive"
+        return
+    }
+
+    git checkout -b $BranchName
+
+    if ($PushRepo) {
+        Push-Repo -CommitMessage "Pushing new branch to remote repository."
+    }
 }
