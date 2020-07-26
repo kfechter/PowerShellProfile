@@ -279,8 +279,6 @@ if ($GitHubCLIExists) {
         }
 
         $PullRequestParameters = @()
-        $PullRequestParameters += "--title $RequestTitle"
-        $PullRequestParameters += "--body $RequestBody"
 
         if ($Labels) {
             $PullRequestParameters += "--label $Labels"
@@ -290,6 +288,6 @@ if ($GitHubCLIExists) {
             $PullRequestParameters += "--base $BaseBranch"
         }
 
-        & gh pr create $PullRequestParameters
+        & gh pr create --title "$RequestTitle" --body "$RequestBody" $PullRequestParameters
     }
 }
