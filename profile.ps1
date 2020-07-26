@@ -25,7 +25,10 @@ $DefaultValues = @{
 }
 
 foreach ($Setting in $DefaultValues.GetEnumerator()) {
-    $Setting.Value | Export-Clixml -Path "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+    $SettingFile = "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+    if (-Not (Test-Path -Path $SettingFile)) {
+        $Setting.Value | Export-Clixml -Path $SettingFile
+    }
 }
 
 Set-Location $HOME
