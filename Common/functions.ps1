@@ -123,7 +123,7 @@ Transcription is now Enabled
     }
 
     $TranscriptSettingsRootPath = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
-    $Transcript | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
+    (-Not $Transcript) | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
 }
 
 function Clear-Transcripts {
