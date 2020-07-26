@@ -332,3 +332,35 @@ if ($GitHubCLIExists) {
         }
     }
 }
+
+function Merge-PullRequest {
+    <#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER PullRequestNumber
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+    param(
+        [Parameter(Mandatory = $false)][int]$PullRequestNumber
+    )
+
+    if (-Not $PullRequestNumber) {
+        Write-Warning "No Pull Request Number Selected, Please Specify one from the following list"
+        gh pr list
+        $PullRequestNumber = Read-Host -Prompt "Enter the number of the Pull request you want: "
+    }
+
+    gh pr merge $PullRequestNumber --merge --delete-branch
+    git pull
+}
