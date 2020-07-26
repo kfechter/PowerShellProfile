@@ -256,6 +256,9 @@ if ($GitHubCLIExists) {
     #>
 
         param(
+            [Parameter(Mandatory = $true)][string]$RequestTitle,
+            [Parameter(Mandatory = $true)][string]$RequestBody,
+            [Parameter(Mandatory = $false)][string[]]$Labels,
             [Parameter(Mandatory = $false)][string]$BaseBranch
         )
 
@@ -274,11 +277,18 @@ if ($GitHubCLIExists) {
             return
         }
 
+        $PullRequestParameters = @()
+        $PullRequestParameters += "--title '$RequestTitle'"
+        $PullRequestParameters += "--body '$RequestBody'"
+
+        if ($Labels) {
+            $PullRequestParameters += "--label '$Labels'"
+        }
+
         if ($BaseBranch) {
-            gh pr create --base $BaseBranch
+            $PullRequestParameters += "--base '$BaseBranch'"
         }
-        else {
-            gh pr create
-        }
+
+        gh pr create $PullRequestParameters
     }
 }
