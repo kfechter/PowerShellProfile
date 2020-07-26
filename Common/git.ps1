@@ -1,3 +1,6 @@
+# Important Parameters up here
+$GitHubCLIExists = Get-Command 'gh.exe' -ErrorAction SilentlyContinue
+
 function New-Repo {
     <#
 .SYNOPSIS
@@ -94,54 +97,95 @@ An example
 General notes
 #>
 
-
-    Param(
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPositionalParameters', '', Justification = 'Positional parameters is fine here')]
+    [CmdletBinding()]
+    param(
         [Parameter(Mandatory = $true)][string]$CommitMessage,
         [Parameter(Mandatory = $false)][string]$GitRemoteURL
     )
 
-    # Check to make sure we are in a git controlled folder
-    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
-    if ($GitFolder.Count -eq 0) {
-        Write-Warning "Not a git Repository"
-        return
+    DynamicParam {
+        # Create a new parameter dictionary
+        $runtimeParams = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+
+        # Add optional attributes to parameter
+        $parameterAttributes = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+
+        $parameterMandatoryAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $parameterMandatoryAttribute.Mandatory = $false
+        $parameterAttributes.Add($parameterMandatoryAttribute)
+
+        if ($GitHubCLIExists) {
+            # Create "GeneratePullRequest" and "BaseBranch" Parameters
+            $parameterGeneratePullRequest = New-Object System.Management.Automation.RuntimeDefinedParameter('GeneratePullRequest', [switch], $parameterAttributes)
+            $parameterBaseBranchName = New-Object System.Management.Automation.RuntimeDefinedParameter('BaseBranchName', [string], $parameterAttributes)
+            $runtimeParams.Add('GeneratePullRequest', $parameterGeneratePullRequest)
+            $runtimeParams.Add('BaseBranchName', $parameterBaseBranchName)
+        }
+
+        return $runtimeParams
     }
 
-
-    # Check if Repo has remote
-    $Remotes = (git remote)
-    $MissingRemotes = $Remotes.Count -eq 0
-    if ($MissingRemotes -and -Not $GitRemoteURL) {
-        Write-Warning "Remote URL Required as repo does not have any origin"
-        return
-    }
-    elseif ($MissingRemotes) {
-        git remote add origin $GitRemoteURL
+    Begin {
+        # Create variables from dynamic parameters
+        if ($GitHubCLIExists) {
+            $GeneratePullRequest = $PSBoundParameters['GeneratePullRequest']
+            $BaseBranchName = $PSBoundParameters['BaseBranchName']
+        }
     }
 
-    # Check if the current Branch has an upstream
-    $CurrentBranch = ((git branch) | Where-Object { $_ -like '*`**' }).Replace('*', '').Trim()
-    $BranchStatus = (git status -sb)
+    Process {
+        # Check to make sure we are in a git controlled folder
+        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+        if ($GitFolder.Count -eq 0) {
+            Write-Warning "Not a git Repository"
+            return
+        }
 
-    if ($BranchStatus -like "*origin/$CurrentBranch") {
-        Write-Warning "Branch Has Remote Tracking" -InformationAction Continue
-        git add -A
-        git commit -m $CommitMessage
-        git push
-    }
-    else {
-        Write-Warning "Branch Does Not Have Remote Tracking"
-        git add -A
-        git commit -m $CommitMessage
-        if ($MissingRemotes) {
-            git push --set-upstream origin $CurrentBranch --allow-unrelated-histories
+        # Check if repo has remote
+        $Remotes = (git remote)
+        $MissingRemotes = $Remotes.Count -eq 0
+        if ($MissingRemotes -and -Not $GitRemoteURL) {
+            Write-Warning "Remote URL Required as repo does not have any origin"
+            return
+        }
+        elseif ($MissingRemotes) {
+            git remote add origin $GitRemoteURL
+        }
+
+        # Check if the current branch is tracked upstream
+        $CurrentBranch = ((git branch) | Where-Object { $_ -like '*`**' }).Replace('*', '').Trim()
+        # Check if the current Branch has an upstream
+        $BranchStatus = (git status -sb)
+
+        if ($BranchStatus -like "*origin/$CurrentBranch") {
+            Write-Warning "Branch Has Remote Tracking" -InformationAction Continue
+            git add -A
+            git commit -m $CommitMessage
+            git push
         }
         else {
-            git push --set-upstream origin $CurrentBranch
+            Write-Warning "Branch Does Not Have Remote Tracking"
+            git add -A
+            git commit -m $CommitMessage
+            if ($MissingRemotes) {
+                git push --set-upstream origin $CurrentBranch --allow-unrelated-histories
+            }
+            else {
+                git push --set-upstream origin $CurrentBranch
+            }
+        }
+
+        if ($GeneratePullRequest) {
+            if ($BaseBranchName) {
+                gh pr create --base $BaseBranchName
+            }
+            else {
+                gh pr create
+            }
         }
     }
 }
-
 function Clear-DeletedBranches {
     <#
 .SYNOPSIS
@@ -195,7 +239,6 @@ General notes
     # check for uncommitted changes, Check for a master branch, branch "main" from master and delete master
 }
 
-$GitHubCLIExists = Get-Command 'gh.exe' -ErrorAction SilentlyContinue
 if ($GitHubCLIExists) {
     function New-PullRequest {
         <#
