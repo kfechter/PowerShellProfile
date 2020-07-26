@@ -290,6 +290,6 @@ if ($GitHubCLIExists) {
             $PullRequestParameters += "--base $BaseBranch"
         }
 
-        gh pr create $PullRequestParameters
+        & gh pr create $PullRequestParameters
     }
 }
