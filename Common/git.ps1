@@ -358,7 +358,7 @@ General notes
     if (-Not $PullRequestNumber) {
         Write-Warning "No Pull Request Number Selected, Please Specify one from the following list"
         gh pr list
-        $PullRequestNumber = Read-Host -Prompt "Enter the number of the Pull request you want: "
+        $PullRequestNumber = Read-Host -Prompt "Enter the number of the Pull request you want"
     }
 
     gh pr merge $PullRequestNumber --merge --delete-branch
