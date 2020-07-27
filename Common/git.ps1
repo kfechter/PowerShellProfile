@@ -521,3 +521,40 @@ New-Branch -BranchName 'TestBranch' -PushRepo
         Push-Repo -CommitMessage "Pushing new branch to remote repository."
     }
 }
+
+function Set-WorkingDirectory {
+    <#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER ProjectName
+Parameter description
+
+.PARAMETER ProjectType
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+    param (
+        [Parameter(Mandatory = $true)][string]$ProjectName,
+        [Parameter(Mandatory = $true)][ValidateSet("GitHub", "GitLab")][string]$ProjectType
+    )
+
+    $ProjectRoot = 'D:\\Projects'
+    $ProjectPath = "$ProjectRoot\\$ProjectType\\$ProjectName"
+
+    if (Test-Path -Path $ProjectPath) {
+        Set-Location -Path $ProjectPath
+    }
+    else {
+        Write-Warning "The path specified ($ProjectPath), does not exist."
+    }
+}
