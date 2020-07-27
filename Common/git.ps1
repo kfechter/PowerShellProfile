@@ -525,22 +525,19 @@ New-Branch -BranchName 'TestBranch' -PushRepo
 function Set-WorkingDirectory {
     <#
 .SYNOPSIS
-Short description
+Sets working directory to specified git project location
 
 .DESCRIPTION
-Long description
+Takes in a project name and a repo type, then does a set-location if the path exists. throws a warning if it doesn't exist
 
 .PARAMETER ProjectName
-Parameter description
+The name of the project local clone root
 
 .PARAMETER ProjectType
-Parameter description
+GitLab or Github, where the repo is stored. e.g Path\\To\\Project\\<GitHub|Gitlab>\\Project
 
 .EXAMPLE
-An example
-
-.NOTES
-General notes
+Set-WorkingDirectory -ProjectName MyProject -ProjectType GitLab
 #>
 
     param (
