@@ -5,7 +5,6 @@ $TranscriptDirectory = "C:\Temp\Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
 
 . "$PSSCriptRoot\Common\aliases.ps1" # Always load aliases first
-. "$PSScriptRoot\Common\git.ps1"
 . "$PSSCriptRoot\Common\functions.ps1"
 . "$PSSCriptRoot\Common\personalization.ps1"
 
