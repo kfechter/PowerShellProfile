@@ -1,8 +1,8 @@
 #Requires -PSEdition Core
 #Requires -Modules posh-git, oh-my-posh
 
-$TranscriptDirectory = "C:\Temp\Transcript"
-$ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
+$TranscriptDirectory = "C:\Temp\Transcript" # This will need tweaking for linux
+$ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
 
 . "$PSSCriptRoot\Common\aliases.ps1" # Always load aliases first
 . "$PSSCriptRoot\Common\functions.ps1"
@@ -36,6 +36,6 @@ Clear-Transcripts
 
 if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled.clixml")) {
     $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
-    $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"
+    $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"  # Tweaked for linux
     Start-Transcript -Path $TranscriptPath
 }
