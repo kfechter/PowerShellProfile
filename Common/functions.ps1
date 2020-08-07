@@ -146,3 +146,15 @@ VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Tr
         $OldTranscripts | Remove-Item -Force -Verbose
     }
 }
+
+function Test-AdminPrivilege {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
+    param()
+
+    if ($IsWindows) {
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    }
+    else {
+        return (id -u) -eq 0
+    }
+}

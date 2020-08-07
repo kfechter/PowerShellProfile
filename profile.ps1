@@ -1,14 +1,14 @@
 #Requires -PSEdition Core
 #Requires -Modules posh-git, oh-my-posh
 
-$TranscriptDirectory = "C:\Temp\Transcript" # This will need tweaking for linux
+# aliases
+$PathSeperator = if ($IfWindows) { '\' } else { '/' }
+$TempDirectory = "$HOME$($PathSeperator)Temp"
+$TranscriptDirectory = "$TempDirectory$($PathSeperator)Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
 
-. "$PSSCriptRoot\Common\aliases.ps1" # Always load aliases first
 . "$PSSCriptRoot\Common\functions.ps1"
 . "$PSSCriptRoot\Common\personalization.ps1"
-
-# First time setup (or setup if stuff has been moved/removed/etc)
 
 if (-not (Test-Path -Path $TranscriptDirectory)) {
     New-Item -ItemType Directory -Path $TranscriptDirectory -Force
@@ -36,6 +36,6 @@ Clear-Transcripts
 
 if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled.clixml")) {
     $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
-    $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"  # Tweaked for linux
+    $TranscriptPath = "$TranscriptDirectory$PathSeperator$TranscriptFileName"
     Start-Transcript -Path $TranscriptPath
 }
