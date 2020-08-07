@@ -123,7 +123,7 @@ Transcription is now Enabled
     }
 
     $TranscriptSettingsRootPath = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
-    $Transcript | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
+    (-Not $Transcript) | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
 }
 
 function Clear-Transcripts {
@@ -144,5 +144,17 @@ VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Tr
     if ($OldTranscripts.Count -gt 0) {
         Write-Warning 'Removing Transcripts older than 30 days'
         $OldTranscripts | Remove-Item -Force -Verbose
+    }
+}
+
+function Test-AdminPrivilege {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
+    param()
+
+    if ($IsWindows) {
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    }
+    else {
+        return (id -u) -eq 0
     }
 }
