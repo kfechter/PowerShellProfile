@@ -6,14 +6,8 @@ else {
     function prompt {
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
         param()
-        $History = Get-History
-        if ($History.Count -gt 0) {
-            $PreviousCommand = $History[$History.Count - 1]
-        }
-
-        $CommandPrompt = if ($PreviousCommand) { "Previous Command: $PreviousCommand" } else { "Previous Command: None" }
-
-        "$CommandPrompt [$(Get-Date)] `n PS $($executionContext.SessionState.Path.CurrentLocation)$('> ' * ($nestedPromptLevel + 1))";
+        Write-Output "Previous Command: " -NoNewline
+        Write-Output "$((Get-Date).ToUniversalTime()) (UTC)" -NoNewline -ForegroundColor Yellow
+        "$(Get-Location)>"
     }
 }
-

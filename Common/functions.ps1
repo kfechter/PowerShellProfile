@@ -38,6 +38,56 @@ True
     }
 }
 
+function Show-AssemblyInformation {
+    param([Parameter(Mandatory = $true)][string]$AssemblyPath)
+
+    & ai $AssemblyPath
+}
+
+
+function Test-AdminPrivilege {
+    <#
+.SYNOPSIS
+Checks if a session is running as admin
+
+.DESCRIPTION
+Returns true if the user is running powershell as admin, or false if they are not.
+
+.EXAMPLE
+PS> Test-AdminPrivilege
+False
+#>
+    $isAdminPowerShell = $false
+
+    if ($IsWindows) {
+        $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+        $isAdminPowerShell = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    else {
+        # EUID eq 0 (i think)
+    }
+
+    return $isAdminPowerShell
+}
+
+function ConvertFrom-Base64 {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text
+    )
+
+    return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Text))
+}
+
+function Get-Weather {
+    param(
+        [string]$City = 'Cincinnati',
+        [ValidateSet(0, 1, 2)][int]$DetailLevel = 0
+    )
+
+    $url = "https://wttr.in/{0}?{1}FT" -f $City, $DetailLevel
+    (Invoke-WebRequest -Uri $url -UserAgent 'Curl').Content
+}
+
 function Test-Transcription {
     <#
     .SYNOPSIS
@@ -146,3 +196,13 @@ VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Tr
         $OldTranscripts | Remove-Item -Force -Verbose
     }
 }
+
+function Update-Profile {
+    . $profile.CurrentUserAllHosts
+}
+
+function Edit-Profile {
+    $Program = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ps1\OpenWithList' -Name a).a
+    & $Program $profile.CurrentUserAllHosts
+}
+

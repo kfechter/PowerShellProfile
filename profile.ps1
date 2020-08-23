@@ -1,6 +1,11 @@
 #Requires -PSEdition Core
 #Requires -Modules posh-git, oh-my-posh
 
+if ($IsWindows) {
+    # Force TLS 1.2
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+
 $TranscriptDirectory = "C:\Temp\Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
 
