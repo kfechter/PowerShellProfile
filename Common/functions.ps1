@@ -38,6 +38,98 @@ True
     }
 }
 
+if ((Get-Alias -Name 'ai' -ErrorAction Ignore).count -ne 0) {
+    function Show-AssemblyInformation {
+        <#
+.SYNOPSIS
+Shows the Assembly Information for a .NET assembly.
+
+.DESCRIPTION
+If Assembly Information is installed, run it with the specified assembly path
+
+.EXAMPLE
+PS> Show-AssemblyInformation -AssemblyPath C:\TEMP\Test.dll
+#>
+        param([Parameter(Mandatory = $true)][string]$AssemblyPath)
+
+        & ai $AssemblyPath
+    }
+}
+
+function Test-AdminPrivilege {
+    <#
+.SYNOPSIS
+Checks if a session is running as admin
+
+.DESCRIPTION
+Returns true if the user is running powershell as admin, or false if they are not.
+
+.EXAMPLE
+PS> Test-AdminPrivilege
+False
+#>
+    $isAdminPowerShell = $false
+
+    if ($IsWindows) {
+        $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+        $isAdminPowerShell = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    else {
+        # EUID eq 0 (i think)
+    }
+
+    return $isAdminPowerShell
+}
+
+function ConvertFrom-Base64 {
+    <#
+.SYNOPSIS
+Converts a base64 encoded string to the ASCII representation
+
+.DESCRIPTION
+Takes in a base64 encoded string and decodes it back into the ASCII representation
+
+.PARAMETER Text
+The encoded Text to convert back
+
+.EXAMPLE
+ConvertFrom-Base64 -Text SGFoYSBCdXR0cyE=
+Haha Butts!
+#>
+
+    param(
+        [Parameter(Mandatory = $true)][string]$Text
+    )
+
+    return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Text))
+}
+
+function Get-Weather {
+    <#
+.SYNOPSIS
+Gets the weather for the specified city.
+.DESCRIPTION
+Gets the weather for the specified city, or if none is provided, the default.
+.PARAMETER City
+Name of the city to get the weather for
+.PARAMETER DetailLevel
+The detail level to request from the API
+0 - Current Weather Only
+1 - Current Weather and Today's Forecast
+2 - Current Weather, Today's Forecast, and Tomorrow's Forecast
+.EXAMPLE
+Get-Weather -City Dayton -DetailLevel 1
+#>
+
+    param(
+        [string]$City = 'Cincinnati',
+        [ValidateSet(0, 1, 2)][int]$DetailLevel = 0
+    )
+
+    $url = "https://wttr.in/{0}?{1}FT" -f $City, $DetailLevel
+    (Invoke-WebRequest -Uri $url -UserAgent 'Curl').Content
+}
+
 function Test-Transcription {
     <#
     .SYNOPSIS
@@ -145,6 +237,36 @@ VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Tr
         Write-Warning 'Removing Transcripts older than 30 days'
         $OldTranscripts | Remove-Item -Force -Verbose
     }
+}
+
+function Update-Profile {
+    <#
+.SYNOPSIS
+Sources the Profile script
+.DESCRIPTION
+Sources the profile script so the user doesnt have to close and reopen powershell to
+have changes take effect.
+
+.EXAMPLE
+Update-Profile
+#>
+
+    . $profile.CurrentUserAllHosts
+}
+
+function Edit-Profile {
+    <#
+.SYNOPSIS
+Opens the profile.ps1 in the default editor
+
+.DESCRIPTION
+Opens the profile.ps1 for CurrentUserAllHosts in the users default ps1 file editor.
+.EXAMPLE
+Edit-Profile
+#>
+
+    $Program = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ps1\OpenWithList' -Name a).a
+    & $Program $profile.CurrentUserAllHosts
 }
 
 function Test-AdminPrivilege {

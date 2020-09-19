@@ -520,6 +520,7 @@ New-Branch -BranchName 'TestBranch' -PushRepo
     if ($PushRepo) {
         Push-Repo -CommitMessage "Pushing new branch to remote repository."
     }
+<<<<<<< HEAD
 }
 
 function Set-WorkingDirectory {
@@ -554,4 +555,6 @@ Set-WorkingDirectory -ProjectName MyProject -ProjectType GitLab
     else {
         Write-Warning "The path specified ($ProjectPath), does not exist."
     }
+=======
+>>>>>>> 9a53c0cdc871ae8b32aa5d1e5284d79fe0f5b096
 }
