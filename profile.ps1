@@ -1,6 +1,10 @@
 #Requires -PSEdition Core
 #Requires -Modules posh-git, oh-my-posh
 
+if ($IsWindows) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+
 # aliases
 $PathSeperator = if ($IfWindows) { '\' } else { '/' }
 $TempDirectory = "$HOME$($PathSeperator)Temp"
