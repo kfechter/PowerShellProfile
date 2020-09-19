@@ -2,19 +2,17 @@
 #Requires -Modules posh-git, oh-my-posh
 
 if ($IsWindows) {
-    # Force TLS 1.2
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 
-$TranscriptDirectory = "C:\Temp\Transcript"
-$ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
+# aliases
+$PathSeperator = if ($IfWindows) { '\' } else { '/' }
+$TempDirectory = "$HOME$($PathSeperator)Temp"
+$TranscriptDirectory = "$TempDirectory$($PathSeperator)Transcript"
+$ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
 
-. "$PSSCriptRoot\Common\aliases.ps1" # Always load aliases first
-. "$PSScriptRoot\Common\git.ps1"
 . "$PSSCriptRoot\Common\functions.ps1"
 . "$PSSCriptRoot\Common\personalization.ps1"
-
-# First time setup (or setup if stuff has been moved/removed/etc)
 
 if (-not (Test-Path -Path $TranscriptDirectory)) {
     New-Item -ItemType Directory -Path $TranscriptDirectory -Force
@@ -30,7 +28,10 @@ $DefaultValues = @{
 }
 
 foreach ($Setting in $DefaultValues.GetEnumerator()) {
-    $Setting.Value | Export-Clixml -Path "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+    $SettingFile = "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+    if (-Not (Test-Path -Path $SettingFile)) {
+        $Setting.Value | Export-Clixml -Path $SettingFile
+    }
 }
 
 Set-Location $HOME
@@ -39,6 +40,6 @@ Clear-Transcripts
 
 if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled.clixml")) {
     $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
-    $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"
+    $TranscriptPath = "$TranscriptDirectory$PathSeperator$TranscriptFileName"
     Start-Transcript -Path $TranscriptPath
 }

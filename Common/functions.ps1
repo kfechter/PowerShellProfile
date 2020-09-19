@@ -215,7 +215,7 @@ Transcription is now Enabled
     }
 
     $TranscriptSettingsRootPath = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts)
-    $Transcript | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
+    (-Not $Transcript) | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
 }
 
 function Clear-Transcripts {
@@ -269,3 +269,14 @@ Edit-Profile
     & $Program $profile.CurrentUserAllHosts
 }
 
+function Test-AdminPrivilege {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope = 'Function')]
+    param()
+
+    if ($IsWindows) {
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    }
+    else {
+        return (id -u) -eq 0
+    }
+}
