@@ -56,4 +56,6 @@ PS> Start-Work MyProject
             Write-Warning -Message "$ProjectPath does not exist"
         }
     }
+
+    Set-Alias -Name workon -Value Start-Work
 }
