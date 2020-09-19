@@ -521,39 +521,3 @@ New-Branch -BranchName 'TestBranch' -PushRepo
         Push-Repo -CommitMessage "Pushing new branch to remote repository."
     }
 }
-
-function Set-WorkingDirectory {
-    <#
-.SYNOPSIS
-Sets working directory to specified git project location
-
-.DESCRIPTION
-Takes in a project name and a repo type, then does a set-location if the path exists. throws a warning if it doesn't exist
-
-.PARAMETER ProjectName
-The name of the project local clone root
-
-.PARAMETER ProjectType
-GitLab or Github, where the repo is stored. e.g Path\\To\\Project\\<GitHub|Gitlab>\\Project
-
-.EXAMPLE
-Set-WorkingDirectory -ProjectName MyProject -ProjectType GitLab
-#>
-
-    param (
-        [Parameter(Mandatory = $true)][string]$ProjectName,
-        [Parameter(Mandatory = $true)][ValidateSet("GitHub", "GitLab")][string]$ProjectType
-    )
-
-    $ProjectRoot = 'D:\\Projects'
-    $ProjectPath = "$ProjectRoot\\$ProjectType\\$ProjectName"
-
-    if (Test-Path -Path $ProjectPath) {
-        Set-Location -Path $ProjectPath
-    }
-    else {
-        Write-Warning "The path specified ($ProjectPath), does not exist."
-    }
-}
-
-Set-Alias -Name workon -Value Set-WorkingDirectory
