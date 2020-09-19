@@ -11,6 +11,8 @@ $TempDirectory = "$HOME$($PathSeperator)Temp"
 $TranscriptDirectory = "$TempDirectory$($PathSeperator)Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
 
+. "$PSSCriptRoot\Common\aliases.ps1"
+. "$PSSCriptRoot\Common\git.ps1"
 . "$PSSCriptRoot\Common\functions.ps1"
 . "$PSSCriptRoot\Common\personalization.ps1"
 
