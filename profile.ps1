@@ -30,7 +30,7 @@ $DefaultValues = @{
 }
 
 foreach ($Setting in $DefaultValues.GetEnumerator()) {
-    $SettingFile = "$ProfileDirectory\Settings\$($Setting.Key).clixml"
+    $SettingFile = "$ProfileDirectory\Settings\$($Setting.Key)-$($env:COMPUTERNAME).clixml"
     if (-Not (Test-Path -Path $SettingFile)) {
         $Setting.Value | Export-Clixml -Path $SettingFile
     }
@@ -40,7 +40,7 @@ Set-Location $HOME
 
 Clear-Transcripts
 
-if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled.clixml")) {
+if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled-$($env:COMPUTERNAME).clixml")) {
     $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
     $TranscriptPath = "$TranscriptDirectory$PathSeperator$TranscriptFileName"
     Start-Transcript -Path $TranscriptPath
