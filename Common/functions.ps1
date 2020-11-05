@@ -1,3 +1,7 @@
+$ProfileDataPath = [IO.Path]::Combine($ProfileDirectory, 'Data')
+$AdjectiveFile = [IO.Path]::Combine($ProfileDataPath, 'Adjectives.txt')
+$NounFile = [IO.Path]::Combine($ProfileDataPath, 'Nouns.txt')
+
 function Test-PendingReboot {
     <#
 .SYNOPSIS
@@ -260,13 +264,12 @@ function Edit-Profile {
 Opens the profile.ps1 in the default editor
 
 .DESCRIPTION
-Opens the profile.ps1 for CurrentUserAllHosts in the users default ps1 file editor.
+Opens the profile.ps1 for CurrentUserAllHosts in VSCode
+
 .EXAMPLE
 Edit-Profile
 #>
-
-    $Program = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ps1\OpenWithList' -Name a).a
-    & $Program $profile.CurrentUserAllHosts
+    code $profile.CurrentUserAllHosts
 }
 
 function Test-AdminPrivilege {
@@ -278,5 +281,26 @@ function Test-AdminPrivilege {
     }
     else {
         return (id -u) -eq 0
+    }
+}
+
+if ((Test-Path -Path $AdjectiveFile) -and ((Test-Path -Path $NounFile))) {
+    function New-ProjectName {
+        <#
+.SYNOPSIS
+Generates a project name from a random adjective and a random nown
+
+.DESCRIPTION
+Randomly grabs one noun and one adjective from a list of nouns and adjectives 
+in the Data folder,  then string formats them together to create a project name
+
+.EXAMPLE
+New-ProjectName
+#>
+        $adjectives = Get-Content $AdjectiveFile
+        $noun = Get-Content $NounFile
+        $randomAdj = Get-Random -Minimum 0 -Maximum $adjectives.Length
+        $randomNoun = Get-Random -Minimum 0 -Maximum $noun.Length
+        '{0}{1}' -f (Get-Culture).TextInfo.ToTitleCase($adjectives[$randomAdj]), (Get-Culture).TextInfo.ToTitleCase($noun[$randomNoun]) | Write-Output
     }
 }
