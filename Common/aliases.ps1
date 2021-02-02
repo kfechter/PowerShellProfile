@@ -63,14 +63,14 @@ The name of the project to push-location into the root of.
 
 .EXAMPLE
 PS> Start-Work MyProject
-"Setting Location to GIT_PROJECT_ROOT_URL\MyProject"
+"Setting Location to GIT_PROJECT_ROOT_PATH\MyProject"
 #>
         [CmdletBinding()]
         Param()
 
         DynamicParam {
             $attributes = new-object System.Management.Automation.ParameterAttribute
-            $attributes.Mandatory = $true
+            $attributes.Mandatory = $false
 
             $attributeCollection = new-object -Type System.Collections.ObjectModel.Collection[System.Attribute]
             $attributeCollection.Add($attributes)
@@ -89,13 +89,19 @@ PS> Start-Work MyProject
         }
 
         End {
-            $ProjectPath = "$($env:GIT_PROJECT_ROOT_PATH)\$($PSBoundParameters['ProjectName'])"
-            if (Test-Path -Path $ProjectPath) {
-                Write-Output -InputObject "Switching Location to $ProjectPath"
-                Push-Location -Path $ProjectPath
+            if($PSBoundParameters['ProjectName'])
+            {
+                $ProjectPath = "$($env:GIT_PROJECT_ROOT_PATH)\$($PSBoundParameters['ProjectName'])"
+                if (Test-Path -Path $ProjectPath) {
+                    Write-Output -InputObject "Switching Location to $ProjectPath"
+                    Push-Location -Path $ProjectPath
+                }
+                else {
+                    Write-Warning -Message "$ProjectPath does not exist"
+                }
             }
             else {
-                Write-Warning -Message "$ProjectPath does not exist"
+                Set-Location $env:GIT_PROJECT_ROOT_PATH
             }
         }
     }

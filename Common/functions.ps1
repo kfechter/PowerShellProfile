@@ -235,11 +235,17 @@ PS> Clear-Transcripts
 WARNING: Removing Transcripts older than 30 days
 VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Transcript-20200726_003403.txt".
 #>
-
-    $OldTranscripts = (Get-ChildItem -Path "C:\Temp\Transcript" -Filter '*.txt' | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) })
-    if ($OldTranscripts.Count -gt 0) {
-        Write-Warning 'Removing Transcripts older than 30 days'
-        $OldTranscripts | Remove-Item -Force -Verbose
+    if (Test-Path -Path "C:\Temp\Transcript")
+    {
+        $OldTranscripts = (Get-ChildItem -Path "C:\Temp\Transcript" -Filter '*.txt' | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) })
+        if ($OldTranscripts.Count -gt 0) {
+            Write-Warning 'Removing Transcripts older than 30 days'
+            $OldTranscripts | Remove-Item -Force -Verbose
+        }
+    }
+    else 
+    {
+        Write-Warning "No Transcripts directory to clean"
     }
 }
 
@@ -269,7 +275,10 @@ Opens the profile.ps1 for CurrentUserAllHosts in VSCode
 .EXAMPLE
 Edit-Profile
 #>
-    code $profile.CurrentUserAllHosts
+    Set-Location -Path $ProfileDirectory
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        code $ProfileDirectory
+    }
 }
 
 function Test-AdminPrivilege {
@@ -302,5 +311,30 @@ New-ProjectName
         $randomAdj = Get-Random -Minimum 0 -Maximum $adjectives.Length
         $randomNoun = Get-Random -Minimum 0 -Maximum $noun.Length
         '{0}{1}' -f (Get-Culture).TextInfo.ToTitleCase($adjectives[$randomAdj]), (Get-Culture).TextInfo.ToTitleCase($noun[$randomNoun]) | Write-Output
+    }
+
+    if ($GitHubCLIExists) {
+        function New-Project {
+            Param(
+                [Parameter(Mandatory = $false)][string]$ProjectName,
+                [switch]$PrivateRepo
+            )
+
+            if (-not $ProjectName) {
+                $ProjectName = New-ProjectName
+                Write-Warning "Project name was not specified, setting to $ProjectName"
+            }
+
+            Set-Location -Path $env:GIT_PROJECT_ROOT_PATH
+
+            if ($PrivateRepo) {
+                gh repo create $ProjectName --private --confirm
+            }
+            else {
+                gh repo create $ProjectName --public --confirm
+            }
+
+            Set-Location -Path "$($env:GIT_PROJECT_ROOT_PATH)\$ProjectName"
+        }
     }
 }
