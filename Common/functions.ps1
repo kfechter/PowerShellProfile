@@ -233,18 +233,16 @@ Removes all transcript text files older than 30 days from the profile transcript
 .EXAMPLE
 PS> Clear-Transcripts
 WARNING: Removing Transcripts older than 30 days
-VERBOSE: Performing the operation "Remove File" on target "C:\Temp\Transcript\Transcript-20200726_003403.txt".
+VERBOSE: Performing the operation "Remove File" on target $TranscriptDirectory".
 #>
-    if (Test-Path -Path "C:\Temp\Transcript")
-    {
-        $OldTranscripts = (Get-ChildItem -Path "C:\Temp\Transcript" -Filter '*.txt' | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) })
+    if (Test-Path -Path $TranscriptDirectory) {
+        $OldTranscripts = (Get-ChildItem -Path $TranscriptDirectory -Filter '*.txt' | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) })
         if ($OldTranscripts.Count -gt 0) {
             Write-Warning 'Removing Transcripts older than 30 days'
             $OldTranscripts | Remove-Item -Force -Verbose
         }
     }
-    else 
-    {
+    else {
         Write-Warning "No Transcripts directory to clean"
     }
 }
@@ -300,7 +298,7 @@ if ((Test-Path -Path $AdjectiveFile) -and ((Test-Path -Path $NounFile))) {
 Generates a project name from a random adjective and a random nown
 
 .DESCRIPTION
-Randomly grabs one noun and one adjective from a list of nouns and adjectives 
+Randomly grabs one noun and one adjective from a list of nouns and adjectives
 in the Data folder,  then string formats them together to create a project name
 
 .EXAMPLE

@@ -28,6 +28,19 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 
 if ($null -ne $env:GIT_PROJECT_ROOT_PATH) {
 
+    function Push-ProjectLocation {
+        <#
+.SYNOPSIS
+Sets location to path specified in $env:GIT_PROJECT_ROOT_PATH
+ .DESCRIPTION
+if GIT_PROJECT_ROOT_PATH environment variable is set, this function allows the user to
+quickly move to the project root
+.EXAMPLE
+PS> Push-ProjectLocation
+#>
+        Push-Location $env:GIT_PROJECT_ROOT_PATH
+    }
+
     function Show-Projects {
         <#
 .SYNOPSIS

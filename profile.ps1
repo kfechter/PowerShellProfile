@@ -6,7 +6,7 @@ if ($IsWindows) {
 }
 
 # aliases
-$PathSeperator = if ($IfWindows) { '\' } else { '/' }
+$PathSeperator = if ($IsWindows) { '\' } else { '/' }
 $TempDirectory = "$HOME$($PathSeperator)Temp"
 $TranscriptDirectory = "$TempDirectory$($PathSeperator)Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
@@ -16,6 +16,10 @@ $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHo
 . "$PSSCriptRoot\Common\git.ps1"
 . "$PSSCriptRoot\Common\functions.ps1"
 . "$PSSCriptRoot\Common\personalization.ps1"
+
+if (-not (Test-Path -Path $TempDirectory)) {
+    New-Item -ItemType Directory -Path $TempDirectory -Force
+}
 
 if (-not (Test-Path -Path $TranscriptDirectory)) {
     New-Item -ItemType Directory -Path $TranscriptDirectory -Force
