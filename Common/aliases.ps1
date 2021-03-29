@@ -102,8 +102,7 @@ PS> Start-Work MyProject
         }
 
         End {
-            if($PSBoundParameters['ProjectName'])
-            {
+            if ($PSBoundParameters['ProjectName']) {
                 $ProjectPath = "$($env:GIT_PROJECT_ROOT_PATH)\$($PSBoundParameters['ProjectName'])"
                 if (Test-Path -Path $ProjectPath) {
                     Write-Output -InputObject "Switching Location to $ProjectPath"
