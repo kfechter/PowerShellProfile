@@ -85,6 +85,40 @@ False
     return $isAdminPowerShell
 }
 
+function Invoke-Magic8Ball {
+    Param(
+        [Parameter(Mandatory=$true)][string]$Question
+    )
+
+    $Answers = @(
+    'It is certain.',
+    'It is decidedly so.',
+    'Without a doubt.',
+    'Yes definitely.',
+    'You may rely on it.',
+    'As I see it, yes.',
+    'Most likely.',
+    'Outlook good.',
+    'Yes.',
+    'Signs point to yes.',
+    'Reply hazy, try again.',
+    'Ask again later.',
+    'Better not tell you now.',
+    'Cannot predict now.',
+    'Concentrate and ask again.',
+    'Don''t count on it.',
+    'My reply is no.',
+    'My sources say no.',
+    'Outlook not so good.',
+    'Very doubtful.')
+
+    $Response = (Get-Random -Minimum 0 -Maximum 19)
+    $Color = if($Response -le 9) { 'Green' } elseif(($Response -gt 9) -and ($Response -le 14)) { 'Yellow' } elseif(($Response -gt 14) -and ($Response -le 19)) { 'Red' } 
+
+
+    $Answers[$Response] | Write-Host -ForegroundColor $Color
+}
+
 function ConvertFrom-Base64 {
     <#
 .SYNOPSIS
