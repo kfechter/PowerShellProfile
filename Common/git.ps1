@@ -1,6 +1,6 @@
 # Important Parameters up here
 $GitHubCLIExists = Get-Command 'gh.exe' -ErrorAction SilentlyContinue
-$NonRepoWarning = "Current Directory is not a Git repository."
+$NonRepoWarning = 'Current Directory is not a Git repository.'
 $BranchNameFilter = @('master', 'slave')
 
 function Test-IsGitRepo {
@@ -18,7 +18,7 @@ False
 
 #>
 
-    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+    $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter '.git'
     return ($GitFolder.Count -ne 0)
 }
 
@@ -177,16 +177,16 @@ see https://cli.github.com/ for the tool.
 
         $generatePullRequestAttribute = New-Object System.Management.Automation.ParameterAttribute
         $generatePullRequestAttribute.Mandatory = $false
-        $generatePullRequestAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $generatePullRequestAttribute.ParameterSetName = 'GeneratePullRequestParamSet'
         $generatePullRequestAttributes.Add($generatePullRequestAttribute)
 
         $requiredParametersAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $requiredParametersAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $requiredParametersAttribute.ParameterSetName = 'GeneratePullRequestParamSet'
         $requiredParametersAttribute.Mandatory = $true
         $requiredParametersAttributes.Add($requiredParametersAttribute)
 
         $optionalParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $requiredParametersAttribute.ParameterSetName = "GeneratePullRequestParamSet"
+        $requiredParametersAttribute.ParameterSetName = 'GeneratePullRequestParamSet'
         $requiredParametersAttribute.Mandatory = $false
         $optionalParametersAttributes.Add($optionalParameterAttribute)
 
@@ -220,9 +220,9 @@ see https://cli.github.com/ for the tool.
 
     Process {
         # Check to make sure we are in a git controlled folder
-        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter '.git'
         if ($GitFolder.Count -eq 0) {
-            Write-Warning "Not a git Repository"
+            Write-Warning 'Not a git Repository'
             return
         }
 
@@ -230,7 +230,7 @@ see https://cli.github.com/ for the tool.
         $Remotes = (git remote)
         $MissingRemotes = $Remotes.Count -eq 0
         if ($MissingRemotes -and -Not $GitRemoteURL) {
-            Write-Warning "Remote URL Required as repo does not have any origin"
+            Write-Warning 'Remote URL Required as repo does not have any origin'
             return
         }
         elseif ($MissingRemotes) {
@@ -243,14 +243,14 @@ see https://cli.github.com/ for the tool.
         $BranchStatus = (git status -sb)
 
         if ($BranchStatus -like "*origin/$CurrentBranch") {
-            Write-Warning "Branch Has Remote Tracking" -InformationAction Continue
+            Write-Warning 'Branch Has Remote Tracking' -InformationAction Continue
             git pull
             git add -A
             git commit -m $CommitMessage
             git push
         }
         else {
-            Write-Warning "Branch Does Not Have Remote Tracking"
+            Write-Warning 'Branch Does Not Have Remote Tracking'
             git add -A
             git commit -m $CommitMessage
             if ($MissingRemotes) {
@@ -283,7 +283,7 @@ see https://cli.github.com/ for the tool.
         }
     }
 }
-function Clear-DeletedBranches {
+function Clear-DeletedBranch {
     <#
 .SYNOPSIS
 Clears branches that have been deleted on the remote, but are not deleted from local.
@@ -310,7 +310,7 @@ PS> Clear-Branches
     }
 }
 
-function Rename-Branches {
+function Rename-Branch {
     <#
 .SYNOPSIS
 Renames the "master" branch of a repository to "main"
@@ -333,21 +333,21 @@ see here for reasoning about branch rename https://www.hanselman.com/blog/Easily
     }
 
     $CurrentBranch = git branch --show-current
-    if ($CurrentBranch -ne "master") {
-        Write-Warning "You must be on the master branch for the rename to work"
+    if ($CurrentBranch -ne 'master') {
+        Write-Warning 'You must be on the master branch for the rename to work'
         return
     }
 
     $GitChanges = git status --porcelain
 
     if ($GitChanges.Count -gt 0) {
-        Write-Warning "Please stash or commit all changes or they will be lost"
+        Write-Warning 'Please stash or commit all changes or they will be lost'
         return
     }
 
     $GitCommits = git cherry -v
     if ($GitCommits.Count -gt 0) {
-        Write-Warning "Please push all commits to remote before running or they will be lost."
+        Write-Warning 'Please push all commits to remote before running or they will be lost.'
         return
     }
 
@@ -400,9 +400,9 @@ if ($GitHubCLIExists) {
         )
 
         # Check to make sure we are in a git controlled folder
-        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter '.git'
         if ($GitFolder.Count -eq 0) {
-            Write-Warning "Not a git Repository"
+            Write-Warning 'Not a git Repository'
             return
         }
 
@@ -410,7 +410,7 @@ if ($GitHubCLIExists) {
         $CurrentBranch = ((git branch) | Where-Object { $_ -like '*`**' }).Replace('*', '').Trim()
         if ((($CurrentBranch -eq 'main') -or ($CurrentBranch -eq 'master')) -and -Not $BaseBranch) {
             Write-Warning "Branch is currently on $CurrentBranch. This is the default branch."
-            Write-Warning "Run this command to create a pull request from a non default branch or specify a base branch"
+            Write-Warning 'Run this command to create a pull request from a non default branch or specify a base branch'
             return
         }
 
@@ -460,16 +460,16 @@ if ($GitHubCLIExists) {
         )
 
         # Check to make sure we are in a git controlled folder
-        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter ".git"
+        $GitFolder = Get-ChildItem -Path $(Get-Location) -Force -Directory -Filter '.git'
         if ($GitFolder.Count -eq 0) {
-            Write-Warning "Not a git Repository"
+            Write-Warning 'Not a git Repository'
             return
         }
 
         if (-Not $PullRequestNumber) {
-            Write-Warning "No Pull Request Number Selected, Please Specify one from the following list"
+            Write-Warning 'No Pull Request Number Selected, Please Specify one from the following list'
             gh pr list
-            $PullRequestNumber = Read-Host -Prompt "Enter the number of the Pull request you want"
+            $PullRequestNumber = Read-Host -Prompt 'Enter the number of the Pull request you want'
         }
 
         gh pr merge $PullRequestNumber --merge --delete-branch
@@ -511,13 +511,13 @@ New-Branch -BranchName 'TestBranch' -PushRepo
     }
 
     if ($BranchName -in $BranchNameFilter) {
-        Write-Warning "Consider using branch names that are more inclusive"
+        Write-Warning 'Consider using branch names that are more inclusive'
         return
     }
 
     git checkout -b $BranchName
 
     if ($PushRepo) {
-        Push-Repo -CommitMessage "Pushing new branch to remote repository."
+        Push-Repo -CommitMessage 'Pushing new branch to remote repository.'
     }
 }

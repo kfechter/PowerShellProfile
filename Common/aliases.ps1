@@ -41,7 +41,7 @@ PS> Push-ProjectLocation
         Push-Location $env:GIT_PROJECT_ROOT_PATH
     }
 
-    function Show-Projects {
+    function Show-ProjectTree {
         <#
 .SYNOPSIS
 Shows list of folder names in GIT_PROJECT_ROOT_PATH
@@ -59,7 +59,7 @@ PS> Show-Projects
             $Projects
         }
         else {
-            Write-Warning "No projects to show."
+            Write-Warning 'No projects to show.'
         }
     }
 
@@ -94,9 +94,9 @@ PS> Start-Work MyProject
                 $AttributeCollection.Add($ValidateSetAttribute)
             }
 
-            $dynamicParameter = new-object -Type System.Management.Automation.RuntimeDefinedParameter("ProjectName", [string], $attributeCollection)
+            $dynamicParameter = new-object -Type System.Management.Automation.RuntimeDefinedParameter('ProjectName', [string], $attributeCollection)
             $paramDictionary = new-object -Type System.Management.Automation.RuntimeDefinedParameterDictionary
-            $paramDictionary.Add("ProjectName", $dynamicParameter)
+            $paramDictionary.Add('ProjectName', $dynamicParameter)
 
             return $paramDictionary
         }
