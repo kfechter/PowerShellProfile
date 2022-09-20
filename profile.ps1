@@ -12,10 +12,11 @@ $TranscriptDirectory = "$TempDirectory$($PathSeperator)Transcript"
 $ProfileDirectory = [System.IO.Path]::GetDirectoryName($profile.CurrentUserAllHosts) # Not sure if this works on linux
 
 
-. "$PSSCriptRoot\Common\aliases.ps1"
-. "$PSSCriptRoot\Common\git.ps1"
-. "$PSSCriptRoot\Common\functions.ps1"
-. "$PSSCriptRoot\Common\personalization.ps1"
+. "$PSScriptRoot\Common\aliases.ps1"
+. "$PSScriptRoot\Common\git.ps1"
+. "$PSScriptRoot\Common\functions.ps1"
+. "$PSScriptRoot\Common\personalization.ps1"
+. "$PSScriptRoot\Common\stackexchange.ps1"
 
 if (-not (Test-Path -Path $TempDirectory)) {
     New-Item -ItemType Directory -Path $TempDirectory -Force
