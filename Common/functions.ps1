@@ -2,8 +2,7 @@ $ProfileDataPath = [IO.Path]::Combine($ProfileDirectory, 'Data')
 $AdjectiveFile = [IO.Path]::Combine($ProfileDataPath, 'Adjectives.txt')
 $NounFile = [IO.Path]::Combine($ProfileDataPath, 'Nouns.txt')
 
-function Join-Parts
-{
+function Join-Part {
     <#
     .SYNOPSIS
         Join strings with a specified separator.
@@ -49,27 +48,26 @@ function Join-Parts
     .NOTES
         Credit to Rob C. and Michael S. from this post:
         http://stackoverflow.com/questions/9593535/best-way-to-join-parts-with-a-separator-in-powershell
-    
+
     #>
     [cmdletbinding()]
     param
     (
-    [string]$Separator = "/",
+        [string]$Separator = '/',
 
-    [parameter(ValueFromRemainingArguments=$true)]
-    [string[]]$Parts = $null
-        
+        [parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$Parts = $null
+
     )
 
     ( $Parts |
-        Where { $_ } |
-        Foreach { ( [string]$_ ).trim($Separator) } |
-        Where { $_ }
+        Where-Object { $_ } |
+        ForEach-Object { ( [string]$_ ).trim($Separator) } |
+        Where-Object { $_ }
     ) -join $Separator
 }
 
-function Add-ObjectDetail
-{
+function Add-ObjectDetail {
     <#
     .SYNOPSIS
         Decorate an object with
@@ -81,19 +79,19 @@ function Add-ObjectDetail
         Helper function to decorate an object with
             - A TypeName
             - New properties
-            - Default parameters 
+            - Default parameters
 
     .PARAMETER InputObject
         Object to decorate. Accepts pipeline input.
 
     .PARAMETER TypeName
         Typename to insert.
-        
+
         This will show up when you use Get-Member against the resulting object.
-        
+
     .PARAMETER PropertyToAdd
         Add these noteproperties.
-        
+
         Format is a hashtable with Key (Property Name) = Value (Property Value).
 
         Example to add a One and Date property:
@@ -156,7 +154,7 @@ function Add-ObjectDetail
     .NOTES
         This breaks the 'do one thing' rule from certain perspectives...
         The goal is to decorate an object all in one shot
-   
+
         This abstraction simplifies decorating an object, with a slight trade-off in performance. For example:
 
         10,000 objects, add a property and typename:
@@ -165,74 +163,64 @@ function Add-ObjectDetail
 
         Initial code borrowed from Shay Levy:
         http://blogs.microsoft.co.il/scriptfanatic/2012/04/13/custom-objects-default-display-in-powershell-30/
-        
+
     .LINK
         http://ramblingcookiemonster.github.io/Decorating-Objects/
 
     .FUNCTIONALITY
         PowerShell Language
     #>
-    [CmdletBinding()] 
+    [CmdletBinding()]
     param(
-           [Parameter( Mandatory = $true,
-                       Position=0,
-                       ValueFromPipeline=$true )]
-           [ValidateNotNullOrEmpty()]
-           [psobject[]]$InputObject,
+        [Parameter( Mandatory = $true,
+            Position = 0,
+            ValueFromPipeline = $true )]
+        [ValidateNotNullOrEmpty()]
+        [psobject[]]$InputObject,
 
-           [Parameter( Mandatory = $false,
-                       Position=1)]
-           [string]$TypeName,
+        [Parameter( Mandatory = $false,
+            Position = 1)]
+        [string]$TypeName,
 
-           [Parameter( Mandatory = $false,
-                       Position=2)]    
-           [System.Collections.Hashtable]$PropertyToAdd,
+        [Parameter( Mandatory = $false,
+            Position = 2)]
+        [System.Collections.Hashtable]$PropertyToAdd,
 
-           [Parameter( Mandatory = $false,
-                       Position=3)]
-           [ValidateNotNullOrEmpty()]
-           [Alias('dp')]
-           [System.String[]]$DefaultProperties,
+        [Parameter( Mandatory = $false,
+            Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [Alias('dp')]
+        [System.String[]]$DefaultProperties,
 
-           [boolean]$Passthru = $True
+        [boolean]$Passthru = $True
     )
-    
-    Begin
-    {
-        if($PSBoundParameters.ContainsKey('DefaultProperties'))
-        {
+
+    Begin {
+        if ($PSBoundParameters.ContainsKey('DefaultProperties')) {
             # define a subset of properties
-            $ddps = New-Object System.Management.Automation.PSPropertySet DefaultDisplayPropertySet,$DefaultProperties
+            $ddps = New-Object System.Management.Automation.PSPropertySet DefaultDisplayPropertySet, $DefaultProperties
             $PSStandardMembers = [System.Management.Automation.PSMemberInfo[]]$ddps
         }
     }
-    Process
-    {
-        foreach($Object in $InputObject)
-        {
-            switch ($PSBoundParameters.Keys)
-            {
-                'PropertyToAdd'
-                {
-                    foreach($Key in $PropertyToAdd.Keys)
-                    {
+    Process {
+        foreach ($Object in $InputObject) {
+            switch ($PSBoundParameters.Keys) {
+                'PropertyToAdd' {
+                    foreach ($Key in $PropertyToAdd.Keys) {
                         #Add some noteproperties. Slightly faster than Add-Member.
-                        $Object.PSObject.Properties.Add( ( New-Object System.Management.Automation.PSNoteProperty($Key, $PropertyToAdd[$Key]) ) )  
+                        $Object.PSObject.Properties.Add( ( New-Object System.Management.Automation.PSNoteProperty($Key, $PropertyToAdd[$Key]) ) )
                     }
                 }
-                'TypeName'
-                {
+                'TypeName' {
                     #Add specified type
-                    [void]$Object.PSObject.TypeNames.Insert(0,$TypeName)
+                    [void]$Object.PSObject.TypeNames.Insert(0, $TypeName)
                 }
-                'DefaultProperties'
-                {
+                'DefaultProperties' {
                     # Attach default display property set
                     Add-Member -InputObject $Object -MemberType MemberSet -Name PSStandardMembers -Value $PSStandardMembers
                 }
             }
-            if($Passthru)
-            {
+            if ($Passthru) {
                 $Object
             }
         }
@@ -270,7 +258,7 @@ Function ConvertTo-UnixDate {
         $Date = $Date.ToUniversalTime()
     }
 
-    $unixEpochStart = new-object DateTime 1970,1,1,0,0,0,([DateTimeKind]::Utc)
+    $unixEpochStart = new-object DateTime 1970, 1, 1, 0, 0, 0, ([DateTimeKind]::Utc)
     [int]($Date - $unixEpochStart).TotalSeconds
 }
 
@@ -302,11 +290,10 @@ Function ConvertFrom-UnixDate {
     )
 
     # Adapted from http://stackoverflow.com/questions/10781697/convert-unix-time-with-powershell
-    $unixEpochStart = new-object DateTime 1970,1,1,0,0,0,([DateTimeKind]::Utc)
+    $unixEpochStart = new-object DateTime 1970, 1, 1, 0, 0, 0, ([DateTimeKind]::Utc)
     $Output = $unixEpochStart.AddSeconds($Date)
 
-    if(-not $utc)
-    {
+    if (-not $utc) {
         $Output = $Output.ToLocalTime()
     }
 
@@ -331,14 +318,14 @@ True
     param()
 
     if ($IsLinux) {
-        return Test-Path "/var/run/reboot-required"
+        return Test-Path '/var/run/reboot-required'
     }
     elseif ($IsWindows) {
-        if (Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending" -EA Ignore) { return $true }
-        if (Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -EA Ignore) { return $true }
-        if (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Name PendingFileRenameOperations -EA Ignore) { return $true }
+        if (Get-ChildItem 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -EA Ignore) { return $true }
+        if (Get-Item 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' -EA Ignore) { return $true }
+        if (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager' -Name PendingFileRenameOperations -EA Ignore) { return $true }
         try {
-            $util = [wmiclass]"\\.\root\ccm\clientsdk:CCM_ClientUtilities"
+            $util = [wmiclass]'\\.\root\ccm\clientsdk:CCM_ClientUtilities'
             $status = $util.DetermineIfRebootPending()
             if (($null -ne $status) -and $status.RebootPending) {
                 return $true
@@ -348,7 +335,7 @@ True
         return $false
     }
     else {
-        Write-Warning "This operating system is not supported. Cannot determine pending reboot status."
+        Write-Warning 'This operating system is not supported. Cannot determine pending reboot status.'
         return $False
     }
 }
@@ -397,37 +384,49 @@ False
 }
 
 function Invoke-Magic8Ball {
+    <#
+.SYNOPSIS
+Provides a silly answer to a question.
+
+.DESCRIPTION
+Returns 1 of 20 possible answers to a question.
+
+.EXAMPLE
+PS> Invoke-Magic8Ball -Question 'Will I win the lottery'
+It is Certain.
+#>
     Param(
-        [Parameter(Mandatory=$true)][string]$Question
+        [Parameter(Mandatory = $true)][string]$Question
     )
 
+    $null = $Question # Eat the question
+
     $Answers = @(
-    'It is certain.',
-    'It is decidedly so.',
-    'Without a doubt.',
-    'Yes definitely.',
-    'You may rely on it.',
-    'As I see it, yes.',
-    'Most likely.',
-    'Outlook good.',
-    'Yes.',
-    'Signs point to yes.',
-    'Reply hazy, try again.',
-    'Ask again later.',
-    'Better not tell you now.',
-    'Cannot predict now.',
-    'Concentrate and ask again.',
-    'Don''t count on it.',
-    'My reply is no.',
-    'My sources say no.',
-    'Outlook not so good.',
-    'Very doubtful.')
+        'It is certain.',
+        'It is decidedly so.',
+        'Without a doubt.',
+        'Yes definitely.',
+        'You may rely on it.',
+        'As I see it, yes.',
+        'Most likely.',
+        'Outlook good.',
+        'Yes.',
+        'Signs point to yes.',
+        'Reply hazy, try again.',
+        'Ask again later.',
+        'Better not tell you now.',
+        'Cannot predict now.',
+        'Concentrate and ask again.',
+        'Don''t count on it.',
+        'My reply is no.',
+        'My sources say no.',
+        'Outlook not so good.',
+        'Very doubtful.')
 
     $Response = (Get-Random -Minimum 0 -Maximum 19)
-    $Color = if($Response -le 9) { 'Green' } elseif(($Response -gt 9) -and ($Response -le 14)) { 'Yellow' } elseif(($Response -gt 14) -and ($Response -le 19)) { 'Red' } 
+    $Color = if ($Response -le 9) { 'Green' } elseif (($Response -gt 9) -and ($Response -le 14)) { 'Yellow' } elseif (($Response -gt 14) -and ($Response -le 19)) { 'Red' }
 
-
-    $Answers[$Response] | Write-Host -ForegroundColor $Color
+    $Answers[$Response] | Write-Output -ForegroundColor $Color
 }
 
 function ConvertFrom-Base64 {
@@ -475,7 +474,7 @@ Get-Weather -City Dayton -DetailLevel 1
         [ValidateSet(0, 1, 2)][int]$DetailLevel = 0
     )
 
-    $url = "https://wttr.in/{0}?{1}FT" -f $City, $DetailLevel
+    $url = 'https://wttr.in/{0}?{1}FT' -f $City, $DetailLevel
     (Invoke-WebRequest -Uri $url -UserAgent 'Curl').Content
 }
 
@@ -555,11 +554,11 @@ Transcription is now Enabled
     $TranscriptPath = "C:\Temp\Transcript\$TranscriptFileName"
 
     if ($Transcript) {
-        Write-Output "Transcription is now Disabled"
+        Write-Output 'Transcription is now Disabled'
         Stop-Transcript
     }
     else {
-        Write-Output "Transcription is now Enabled"
+        Write-Output 'Transcription is now Enabled'
         Start-Transcript -Path $TranscriptPath
     }
 
@@ -567,7 +566,7 @@ Transcription is now Enabled
     (-Not $Transcript) | Export-Clixml -Path "$TranscriptSettingsRootPath\Settings\TranscriptEnabled.clixml"
 }
 
-function Clear-Transcripts {
+function Clear-Transcript {
     <#
 .SYNOPSIS
 Clears transcripts older than 30 days.
@@ -588,7 +587,7 @@ VERBOSE: Performing the operation "Remove File" on target $TranscriptDirectory".
         }
     }
     else {
-        Write-Warning "No Transcripts directory to clean"
+        Write-Warning 'No Transcripts directory to clean'
     }
 }
 
@@ -629,7 +628,7 @@ function Test-AdminPrivilege {
     param()
 
     if ($IsWindows) {
-        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
     }
     else {
         return (id -u) -eq 0
@@ -657,10 +656,26 @@ New-ProjectName
     }
 
     if ($GitHubCLIExists) {
+        <#
+.SYNOPSIS
+Generates a project and configures it on GitHub.
+
+.DESCRIPTION
+If project name is specified, then repo is created with that name, otherwise it uses the New-ProjectName function.
+
+.EXAMPLE
+New-Project
+
+.EXAMPLE
+New-Project -ProjectName 'ProjectName'
+
+.EXAMPLE
+New-Project -$PrivateRepo:$true
+#>
         function New-Project {
             Param(
                 [Parameter(Mandatory = $false)][string]$ProjectName,
-                [switch]$PrivateRepo
+                [bool]$PrivateRepo
             )
 
             if (-not $ProjectName) {
