@@ -44,7 +44,7 @@ foreach ($Setting in $DefaultValues.GetEnumerator()) {
 
 Set-Location $HOME
 
-Clear-Transcripts
+Clear-Transcript
 
 if ((Import-Clixml -Path "$ProfileDirectory\Settings\TranscriptEnabled-$($env:COMPUTERNAME).clixml")) {
     $TranscriptFileName = "Transcript-$((Get-Date).ToString('yyyyMMdd_HHmmss')).txt"
